@@ -1,1 +1,1 @@
-# passgenerator
+# Memorable Password Generator
