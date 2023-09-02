@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import messagebox, Toplevel, Listbox, Scrollbar, Button, MULTIPLE, END
 import secrets
 import string
 import pyperclip
@@ -7,7 +8,7 @@ import os
 import random
 import tkinter.filedialog
 
-default_wordlist = [
+wordlist = [
     "apple", "banana", "cherry", "date", "elder", "fig",
     "grape", "honey", "kiwi", "lemon", "mango", "nectar",
     "orange", "pear", "quince", "raspberry", "strawberry", "tangerine",
@@ -30,9 +31,9 @@ def generate_passphrase(num_words,add_numbers, min_digits=None, max_digits=None,
 
     if add_numbers or (min_digits or max_digits):
         if not min_digits:
-            min_digits = random.randint(1, 3)  # Set a random default min_digits
+            min_digits = secrets.randbelow(3) + 1
         if not max_digits:
-            max_digits = random.randint(min_digits, 6)  # Set a random default max_digits
+            max_digits = secrets.randbelow(4) +  1 
 
         num_digits = secrets.randbelow(max_digits - min_digits + 1) + min_digits
         for _ in range(num_digits):
@@ -47,9 +48,9 @@ def generate_passphrase(num_words,add_numbers, min_digits=None, max_digits=None,
         random_word = secrets.randbelow(len(words))
         words[random_word] = words[random_word].capitalize()
     if include_spaces:
-        passphrase = ' '.join(words)  # Separate words with spaces
+        passphrase = ' '.join(words)  
     else:
-        passphrase = ''.join(words)  # No spaces between words
+        passphrase = ''.join(words) 
 
     return passphrase
 
@@ -93,6 +94,7 @@ def copy_to_clipboard():
 
 
 
+
 app = tk.Tk()
 app.title("Memorable Password Generator")
 
@@ -110,9 +112,6 @@ special_chars_var = tk.BooleanVar()
 special_chars_check = tk.Checkbutton(app, text="Include a special character", variable=special_chars_var)
 special_chars_check.pack()
 
-generate_button = tk.Button(app, text="Generate Memorable Passphrase", command=generate_button_clicked)
-generate_button.pack()
-
 passphrase_label = tk.Label(app, text="", wraplength=300)
 passphrase_label.pack()
 
@@ -123,10 +122,10 @@ load_custom_wordlists.pack()
 
 include_spaces = tk.BooleanVar(value=True)  # Include spaces by default
 
-spaces_check = tk.Checkbutton(app, text="Include Spaces", variable=include_spaces)
+spaces_check = tk.Checkbutton(app, text="Include Spaces", command=include_spaces)
 spaces_check.pack()
-
-
 generate_button = tk.Button(app, text="Generate Memorable Passphrase", command=generate_button_clicked)
 generate_button.pack()
+
+
 app.mainloop()
