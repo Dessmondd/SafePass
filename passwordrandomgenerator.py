@@ -42,7 +42,7 @@ def generate_passphrase(num_words,add_numbers, min_digits=None, max_digits=None,
     if add_special_chars:
         words.insert(secrets.randbelow(len(words) + 1), secrets.choice(string.punctuation))
 
-    random.SystemRandom().shuffle(words)
+    secrets.SystemRandom().shuffle(words)
     
     for _ in range(round(len(words) * (capitalize_percentage / 100))):
         random_word = secrets.randbelow(len(words))
@@ -69,8 +69,6 @@ def load_custom_wordlist():
                 
         except Exception as e:
             messagebox.showerror("Error", f"An error occurred while loading the custom wordlist:\n{e}")
-
-
 
 
 def generate_button_clicked():
