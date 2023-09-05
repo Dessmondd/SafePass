@@ -8,3 +8,4 @@ def test_password(password):
         "score": result["score"],  # Password strength score (0-4)
         "feedback": result["feedback"]["suggestions"],  # List of feedback suggestions
     }
+
