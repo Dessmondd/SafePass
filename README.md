@@ -6,3 +6,5 @@ The diceware algorithm works by generating a sequence of random words from a lis
 SafePass has further enhanced the security of the diceware-style algorithm by including additional features such as the option to include numbers and special characters in the passphrase, as well as an option to include spaces between words. These additional features make the generated passphrases more complex and resistant to brute-force attacks.
 
 In addition to the diceware-style algorithm, SafePass also includes a password strength meter that provides feedback on the strength of the generated password. The strength meter uses a combination of factors, including password length, complexity, and entropy, to provide an accurate assessment of the password's strength.
+
+![image](https://github.com/Dessmondd/SafePass/assets/97458634/0641be86-6629-431b-a07e-1d5ab81af79d)
