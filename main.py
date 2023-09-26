@@ -14,7 +14,7 @@ from modules.leakedornot import check_pwned
 class PasswordGenerator:
     def __init__(self):
         self.app = tk.Tk()
-        self.app.title("Memorable Password Generator")
+        self.app.title("SafePass - Password Generator")
         self.app.resizable(width=False, height=False)
         self.style = ttk.Style()
         self.style.theme_use("xpnative")
@@ -23,6 +23,8 @@ class PasswordGenerator:
         self.numbers_var = tk.BooleanVar()
         self.special_chars_var = tk.BooleanVar(value=True)
         self.test_button = tk.Button(text="Test")
+        self.passphrases = []  # store the passphrases separately
+        self.passphrase_labels = []  # store the labels separately
         self.create_widgets()
 
     def toggle_multiple_passphrases(self):
@@ -34,7 +36,7 @@ class PasswordGenerator:
             self.num_passphrases_label.grid_forget()
             self.num_passphrases_spinbox.grid_forget()
             self.num_passphrases_spinbox.config(state="disabled")
-            
+
     def create_widgets(self):
         num_words_label = ttk.Label(self.app, text="Number of words:")
         num_words_label.grid(row=0, column=0, padx=10, pady=5, sticky="w")
@@ -60,12 +62,6 @@ class PasswordGenerator:
         generate_button = ttk.Button(self.app, text="Generate", command=self.generate_button_clicked)
         generate_button.grid(row=4, column=0, columnspan=2, padx=10, pady=10)
 
-        self.passphrase_label = ttk.Label(self.app, text="", wraplength=300)
-        self.passphrase_label.grid(row=5, column=0, columnspan=2, padx=10, pady=5)
-
-        self.copy_button = ttk.Button(self.app, text="Copy", command=self.copy_to_clipboard, state=tk.DISABLED)
-        self.copy_button.grid(row=6, column=0, columnspan=2, padx=10, pady=5)
-
         self.strength_label = ttk.Label(self.app, text="", wraplength=300)
         self.strength_label.grid(row=7, column=0, columnspan=2, padx=10, pady=5)
 
@@ -76,8 +72,6 @@ class PasswordGenerator:
         self.feedback_crack_time.grid(row=9, column=0, columnspan=2, padx=10, pady=5)
 
         self.toggle_multiple_passphrases()
-   
-    
 
     def generate_passphrase(self, num_words, add_numbers, add_special_chars, min_digits=1, max_digits=4, capitalize_percentage=60, include_spaces=True):
         words = [secrets.choice(wordlist).capitalize() for _ in range(num_words)]
@@ -103,7 +97,7 @@ class PasswordGenerator:
             return passphrase
             
         raise RuntimeError(f'Unable to generate a secure passphrase after attempts')
-     
+
     def generate_button_clicked(self):
         num_words = self.num_words_entry.get()
         if num_words is None or num_words == "":
@@ -125,9 +119,17 @@ class PasswordGenerator:
             
             for i in range(num_passphrases):
                 passphrases.append(self.generate_passphrase(num_words, self.numbers_var.get(), self.special_chars_var.get(), include_spaces=self.include_spaces.get()))
-        
-            self.passphrase_label.config(text="\n".join([f"Passphrase {i+1}: {passphrase}" for i, passphrase in enumerate(passphrases)]))
-            self.copy_button.config(state=tk.NORMAL)
+            #Destroy previous labels, so it does not overlap.
+            for label in self.passphrase_labels:
+                label.destroy()
+
+            self.passphrases = passphrases  # store the passphrases
+            self.passphrase_labels = []  # clear the old labels
+            for i, passphrase in enumerate(passphrases):
+                label = ttk.Label(self.app, text=f"Passphrase {i+1}: {passphrase}", wraplength=300)
+                label.grid(row=5+i, column=0, columnspan=2, padx=10, pady=5)
+                label.bind("<Button-1>", self.copy_to_clipboard)  # bind click event
+                self.passphrase_labels.append(label)  # store the label
 
             strength_result = test_password(passphrases[0])
             self.strength_label.config(text=f"Password Strength: {strength_result['score']}/4")
@@ -137,10 +139,17 @@ class PasswordGenerator:
         except ValueError as e:
             messagebox.showerror("Error", f"An error occurred while generating the passphrase:\n{e}")
 
-    def copy_to_clipboard(self):
-        passphrase = self.passphrase_label.cget("text").split(": ")[1]
+    def copy_to_clipboard(self, event=None):
+        # get the index of the clicked label
+        label_index = self.passphrase_labels.index(event.widget)
+        # get the corresponding passphrase
+        passphrase = self.passphrases[label_index]
         pyperclip.copy(passphrase)
         threading.Timer(clear_duration, clear_clipboard).start()
+
+        # provide visual feedback
+        event.widget.config(foreground="green")
+        self.app.after(2000, lambda: event.widget.config(foreground="black"))  # change color back after 2 seconds
 
     def run(self):
         self.app.mainloop()
