@@ -4,21 +4,19 @@ import secrets
 import string
 import pyperclip
 import threading
-import time
+from ttkthemes import ThemedTk
 from modules.password_strength_tester import test_password
 from modules.wordlist import wordlist
 from modules.clipboard_manager import clear_duration, clear_clipboard
 from modules.leakedornot import check_pwned
 
-
 class PasswordGenerator:
     def __init__(self):
-        self.app = tk.Tk()
+        self.app = ThemedTk(theme="arc")
         self.app.title("SafePass - Password Generator")
         self.app.resizable(width=False, height=False)
         self.style = ttk.Style()
-        self.style.theme_use("xpnative")
-
+        
         self.include_spaces = tk.BooleanVar(value=True)
         self.numbers_var = tk.BooleanVar()
         self.special_chars_var = tk.BooleanVar(value=True)
@@ -38,12 +36,21 @@ class PasswordGenerator:
             self.num_passphrases_spinbox.config(state="disabled")
 
     def create_widgets(self):
+        self.create_num_words_widget()
+        self.create_check_buttons()
+        self.create_generate_button()
+        self.create_feedback_labels()
+        self.toggle_multiple_passphrases()
+        self.create_dark_white_mode_button()
+
+    def create_num_words_widget(self):
         num_words_label = ttk.Label(self.app, text="Number of words:")
         num_words_label.grid(row=0, column=0, padx=10, pady=5, sticky="w")
-
-        self.num_words_entry = ttk.Entry(self.app)
+        
+        self.num_words_entry = ttk.Entry(self.app, validate="key", validatecommand=(self.app.register(self.validate_num_words), '%P'))
         self.num_words_entry.grid(row=0, column=1, padx=10, pady=5)
 
+    def create_check_buttons(self):
         numbers_check = ttk.Checkbutton(self.app, text="Include a number", variable=self.numbers_var)
         numbers_check.grid(row=1, column=0, padx=10, pady=5, sticky="w")
 
@@ -57,11 +64,13 @@ class PasswordGenerator:
         self.multiple_passphrases_check= ttk.Checkbutton(self.app, text="Generate multiple passphrases", variable=self.multiple_passphrases_var, command=self.toggle_multiple_passphrases)
         self.multiple_passphrases_check.grid(row=2, column=1, padx=10, pady=5, sticky="w")
         self.num_passphrases_label = ttk.Label(self.app, text="Number of passphrases:")
-        self.num_passphrases_spinbox = ttk.Spinbox(self.app, from_=1, to=5, state="disabled")
+        self.num_passphrases_spinbox = ttk.Spinbox(self.app, from_=1, to=5, state="disabled", validate="key", validatecommand=(self.app.register(self.validate_num_words), '%P'))   
 
+    def create_generate_button(self):
         generate_button = ttk.Button(self.app, text="Generate", command=self.generate_button_clicked)
         generate_button.grid(row=4, column=0, columnspan=2, padx=10, pady=10)
 
+    def create_feedback_labels(self):
         self.strength_label = ttk.Label(self.app, text="", wraplength=300)
         self.strength_label.grid(row=7, column=0, columnspan=2, padx=10, pady=5)
 
@@ -71,7 +80,31 @@ class PasswordGenerator:
         self.feedback_crack_time = ttk.Label(self.app, text="", wraplength=300)
         self.feedback_crack_time.grid(row=9, column=0, columnspan=2, padx=10, pady=5)
 
-        self.toggle_multiple_passphrases()
+    def create_dark_white_mode_button(self):
+        self.dark_toggle = ttk.Button(self.app, text="Dark/White Mode", command=self.dark_white_mode_toggle)
+        self.dark_toggle.grid(row=10, column=0, columnspan=2, padx=10, pady=10)
+
+        
+    def validate_num_words(self, input):
+        if input.isdigit() or input == "":
+            return True
+        else:
+            return False
+        
+    def dark_white_mode_toggle(self):
+        self.status = True if self.app["background"] == "#2d2d30" else False
+        if not self.status:
+            self.style.configure("TLabel", background="#2d2d30", foreground="white")
+            self.style.configure("TButton", background="#2d2d30")
+            self.style.configure("TCheckbutton", background="#2d2d30",foreground="white")
+            self.dark_toggle.configure(style="Gray.TButton")
+            self.style.configure("Gray.TButton", background="#2d2d30")
+            self.app.configure(background="#2d2d30")
+        else:
+            self.style.configure("TLabel", background="white", foreground="black")
+            self.style.configure("TButton", background="white",foreground="black")
+            self.style.configure("TCheckbutton", background="white",foreground="black")
+            self.app.configure(background="white")
 
     def generate_passphrase(self, num_words, add_numbers, add_special_chars, min_digits=1, max_digits=4, capitalize_percentage=60, include_spaces=True):
         words = [secrets.choice(wordlist).capitalize() for _ in range(num_words)]
@@ -97,7 +130,8 @@ class PasswordGenerator:
             return passphrase
             
         raise RuntimeError(f'Unable to generate a secure passphrase after attempts')
-
+    
+    
     def generate_button_clicked(self):
         num_words = self.num_words_entry.get()
         if num_words is None or num_words == "":
