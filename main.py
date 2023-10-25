@@ -18,6 +18,9 @@ class PasswordGenerator:
         self.app.resizable(width=False, height=False)
         self.style = ttk.Style()
 
+
+        self.passphrase_frame = ttk.Frame(self.app)
+        self.passphrase_frame.grid(row=5, column=0, columnspan=2, padx=10, pady=5)
         self.include_spaces = tk.BooleanVar(value=True)
         self.numbers_var = tk.BooleanVar()
         self.special_chars_var = tk.BooleanVar(value=True)
@@ -107,7 +110,7 @@ class PasswordGenerator:
             self.app.configure(background="white")
 
     def generate_passphrase(self, num_words, add_numbers, add_special_chars, min_digits=1, max_digits=4, capitalize_percentage=60, include_spaces=True):
-        for _ in range(20000):  # limit the number of attempts to 100
+        for _ in range(1): 
             words = [secrets.choice(wordlist).capitalize() for _ in range(num_words)]
 
             if add_numbers:
@@ -169,7 +172,7 @@ class PasswordGenerator:
             self.passphrases = passphrases  # store the passphrases
             self.passphrase_labels = []  # clear the old labels
             for i, passphrase in enumerate(passphrases):
-                label = ttk.Label(self.app, text=f"Passphrase {i + 1}: {passphrase}", wraplength=300)
+                label = ttk.Label(self.passphrase_frame, text=f"Passphrase {i + 1}: {passphrase}", wraplength=300)
                 label.grid(row=5 + i, column=0, columnspan=2, padx=10, pady=5)
                 label.bind("<Button-1>", self.copy_to_clipboard)  # bind click event
                 self.passphrase_labels.append(label)  # store the label
